@@ -1,0 +1,9 @@
+{
+  "web" : {
+    "cunsumer_key" : "1pocket costumer key",
+    "redirect_url": "http://localhost:3000/auth/pocket/callback"
+  },
+  "cookie" : {
+    "secret": "keyboard cat"
+  }
+}
