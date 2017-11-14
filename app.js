@@ -6,10 +6,11 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const methodOverride = require('method-override');
 
-const	passport = require('passport');
+const passport = require('passport');
 const PocketStrategy = require('passport-pocket');
 
 const Tagger = require('./tagger/tagger');
+
 const T = new Tagger();
 
 const app = express();
@@ -32,15 +33,15 @@ app.get('/', passport.authenticate('pocket'), (req, res, next) => {
   if(req.user) {
     console.log('User authorized ' + JSON.stringify(req.user));
 
-		pocket.getUnreadItems(req.user.accessToken, (err, items) => {
-			if (err) return next(err);
+    pocket.getUnreadItems(req.user.accessToken, (err, items) => {
+      if (err) return next(err);
 
       res.send(`Welcome ${req.user.username}!`);
       console.log('There are ' + Object.keys(items.list).length + ' unreaded items');
 
       console.log('Loading tags');
       T.getAll(items.list, (err, tags) => {
-			  if (err) return next(err);
+        if (err) return next(err);
         let toSaveLength = Object.keys(tags).length;
         if (!toSaveLength) {
           console.log('Nothing to save. All your articles were already categorized');
@@ -60,7 +61,7 @@ app.get('/', passport.authenticate('pocket'), (req, res, next) => {
 
           if (i % chunckSize === 0) {
             pocket.modify(data, req.user.accessToken, (err, res) => {
-			        if (err) return next(err);
+            if (err) return next(err);
               if (res.status == 1) {
                 console.log(`Data (of size ${res['action_results'].length}) was saved to the Pocket account`);
               } else {
@@ -85,23 +86,23 @@ app.get('/', passport.authenticate('pocket'), (req, res, next) => {
 
     });
 
-	} else {
-		res.send(`You're not authorized.`);
+  } else {
+    res.send(`You're not authorized.`);
     console.log(`Can't find user to retreive information`);
     return next();
-	}
+  }
 
 });
 
 app.get('/auth/pocket/callback', passport.authenticate('pocket', { failureRedirect: '/' }),
   function(req, res) {
-      res.redirect('/');
+    res.redirect('/');
   });
 
 app.use(function(err, req, res, next) {
   console.error(err.stack);
   if (res.headersSent) {
-      return next(err);
+    return next(err);
   }
   res.status(err.status || 500).send('Something went wrong!');
   res.render('error');

@@ -40,22 +40,22 @@ Tagger.prototype.getTags = function (title, url)
 
   let canApplyRule = (rules, title, url) => {
     if (rules.link !== undefined) {
-			for(let i in rules.link) {
+      for(let i in rules.link) {
         let regex = new RegExp(rules.link[i], 'ui');
         if (regex.test(url))
           return true;
       }
-		}
+    }
 
     if (rules.title !== undefined) {
-			for(let i in rules.title) {
+      for(let i in rules.title) {
         let regex = new RegExp(rules.title[i], 'ui');
         if (regex.test(title))
           return true;
       }
-		}
-		return false;
-	}
+    }
+    return false;
+  }
 
 	for (let label in this.config) {
 
