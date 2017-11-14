@@ -54,9 +54,9 @@ app.get('/', passport.authenticate('pocket'), (req, res, next) => {
         for (let id in tags) {
           i++;
           data.push({
-          	"action" : "tags_add",
-          	"item_id" : id,
-          	"tags": tags[id].join(',')
+            action : "tags_add",
+            item_id : id,
+            tags: tags[id].join(',')
           });
 
           if (i % chunckSize === 0) {
@@ -83,9 +83,7 @@ app.get('/', passport.authenticate('pocket'), (req, res, next) => {
           }
         });
       });
-
     });
-
   } else {
     res.send(`You're not authorized.`);
     console.log(`Can't find user to retreive information`);
