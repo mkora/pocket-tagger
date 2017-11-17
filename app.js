@@ -1,18 +1,17 @@
 const express = require('express');
-const path = require('path');
 const config = require('config');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const methodOverride = require('method-override');
-
 const passport = require('passport');
-const PocketStrategy = require('passport-pocket');
-
+const morgan = require('morgan');
+const logger = require('./util/logger');
 const Tagger = require('./tagger/tagger');
 
 const T = new Tagger();
 
+const port = process.env.PORT || 3000;
 const app = express();
 
 app.use(bodyParser.json());
@@ -24,89 +23,90 @@ app.use(session({
   saveUninitialized: true
 }));
 app.use(cookieParser());
+app.use(morgan('combined'));
 
-const pocket = require('./auth')();
+const pocket = require('./util/auth')();
+
 app.use(passport.initialize());
 app.use(passport.session());
 
+logger.info(`For authentification go to http://localhost:${port}`);
 app.get('/', passport.authenticate('pocket'), (req, res, next) => {
-  if(req.user) {
-    console.log('User authorized ' + JSON.stringify(req.user));
-
-    pocket.getUnreadItems(req.user.accessToken, (err, items) => {
-      if (err) return next(err);
-
-      res.send(`Welcome ${req.user.username}!`);
-      console.log('There are ' + Object.keys(items.list).length + ' unreaded items');
-
-      console.log('Loading tags');
-      T.getAll(items.list, (err, tags) => {
-        if (err) return next(err);
-        let toSaveLength = Object.keys(tags).length;
-        if (!toSaveLength) {
-          console.log('Nothing to save. All your articles were already categorized');
-          return;
-        }
-        console.log(toSaveLength + ' articles were categorized');
-
-        let data = [], i = 0;
-        const chunckSize = 50;
-        for (let id in tags) {
-          i++;
-          data.push({
-            action : "tags_add",
-            item_id : id,
-            tags: tags[id].join(',')
-          });
-
-          if (i % chunckSize === 0) {
-            pocket.modify(data, req.user.accessToken, (err, res) => {
-            if (err) return next(err);
-              if (res.status == 1) {
-                console.log(`Data (of size ${res['action_results'].length}) was saved to the Pocket account`);
-              } else {
-                console.log(`An error occured while saving tags`);
-                console.log(res);
-              }
-            });
-            data = [];
-          }
-        }
-
-        pocket.modify(data, req.user.accessToken, (err, res) => {
-          if (err) return next(err);
-          if (res.status == 1) {
-            console.log(`Last data (of size ${res['action_results'].length}) was saved to the Pocket account`);
-          } else {
-            console.log(`An error occured while saving tags`);
-            console.log(res);
-          }
-        });
-      });
-    });
-  } else {
-    res.send(`You're not authorized.`);
-    console.log(`Can't find user to retreive information`);
+  if (!req.user) {
+    res.send('You\'re not authorized.');
+    logger.error('Authentication failed. Please check credentials');
     return next();
   }
 
-});
+  logger.info(`User ${JSON.stringify(req.user)} authorized`);
+  logger.debug('Getting unreaded articles');
 
-app.get('/auth/pocket/callback', passport.authenticate('pocket', { failureRedirect: '/' }),
-  function(req, res) {
-    res.redirect('/');
+  pocket.getUnreadItems(req.user.accessToken, (err, items) => {
+    if (err) return next(err);
+
+    res.send(`Welcome ${req.user.username}!`);
+    logger.info(`Found ${Object.keys(items.list).length} articles`);
+    logger.debug('Running Tagger');
+
+    T.getAll(items.list, (err, tags) => {
+      if (err) return next(err);
+
+      const ids = Object.keys(tags);
+      if (ids.length === 0) {
+        logger.info('Nothing to save. All your articles were already categorized');
+        return next();
+      }
+
+      logger.info(`Found tags for ${ids.length} articles`);
+
+      const chunckSize = 50;
+      let data = [];
+
+      logger.debug(`${Math.round(ids.length / chunckSize) + 1} requests to be sent`);
+
+      for (let i = 0; i < ids.length; i += 1) {
+        data.push({
+          action: 'tags_add',
+          item_id: ids[i],
+          tags: tags[ids[i]].join(',')
+        });
+
+        if (
+          (((i + 1) % chunckSize === 0))
+          || (i === (ids.length - 1))
+        ) {
+          pocket.modify(data, req.user.accessToken, (err, res) => {
+            if (err) return next(err);
+            logger.debug('Preparing to send a request');
+            if (res.status === 1) {
+              logger.info(`Data.length = ${res.action_results.length} was saved to the Pocket account`);
+            } else {
+              logger.error('An error occured while saving tags', res);
+            }
+            return res;
+          });
+          data = [];
+        }
+      }
+      return null;
+    });
+    return null;
   });
 
-app.use(function(err, req, res, next) {
-  console.error(err.stack);
-  if (res.headersSent) {
-    return next(err);
-  }
-  res.status(err.status || 500).send('Something went wrong!');
-  res.render('error');
+  return null;
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, function() {
-  console.log("Listening on " + port);
+app.get(
+  '/auth/pocket/callback',
+  passport.authenticate('pocket', { failureRedirect: '/' }),
+  (req, res) => res.redirect('/')
+);
+
+app.use((err, req, res, next) => {
+  logger.error('An error occured', err.stack);
+  if (res.headersSent) return next(err);
+  res.status(err.status || 500).send('Something went wrong!');
+  return null;
 });
+
+app.listen(port, () => logger.debug(`App: listening on ${port}`));

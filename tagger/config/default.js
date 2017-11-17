@@ -8,7 +8,7 @@ module.exports = {
       ],
       title: [
         'or-rule-one', 'or-rule-two'
-      ]
+      ],
     },
     children: {
       label: 'your-sub-category',
@@ -19,8 +19,8 @@ module.exports = {
         ],
         title: [
           'or-other-rule-one', 'or-other-rule-two'
-        ]
+        ],
       }
     }
-  }
+  },
 }

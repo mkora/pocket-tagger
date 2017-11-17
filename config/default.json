@@ -1,6 +1,6 @@
 {
   "web" : {
-    "cunsumer_key" : "1pocket costumer key",
+    "cunsumer_key" : "pocket customer key",
     "redirect_url": "http://localhost:3000/auth/pocket/callback"
   },
   "cookie" : {
