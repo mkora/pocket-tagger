@@ -2,7 +2,7 @@
 
 #### Overview
 
-Add tags to your Pocket unread articles
+Adds tags to unread articles under your [Pocket](https://getpocket.com/) account
 
 #### Notes 
 
