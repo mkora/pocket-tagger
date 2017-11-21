@@ -48,6 +48,7 @@ app.get('/', passport.authenticate('pocket'), (req, res, next) => {
     logger.info(`Found ${Object.keys(items.list).length} articles`);
     logger.debug('Running Tagger');
 
+    /* eslint no-shadow: ["error", { "allow": ["err", "res"] }] */
     T.getAll(items.list, (err, tags) => {
       if (err) return next(err);
 
