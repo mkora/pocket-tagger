@@ -8,22 +8,22 @@
     "lint": "eslint . --ext js"
   },
   "dependencies": {
-    "body-parser": "~1.17.1",
+    "body-parser": "^1.18.3",
     "config": "^1.26.2",
     "cookie-parser": "^1.4.3",
-    "express": "~4.15.2",
-    "express-session": "^1.15.5",
-    "method-override": "^2.3.9",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "method-override": "^3.0.0",
     "morgan": "^1.9.0",
     "passport": "^0.4.0",
     "passport-pocket": "^1.0.0",
-    "request": "^2.81.0",
+    "request": "^2.88.0",
     "winston": "^2.4.0"
   },
   "devDependencies": {
-    "eslint": "^4.11.0",
+    "eslint": "^5.6.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
-    "nodemon": "^1.12.0"
+    "nodemon": "^1.18.4"
   }
 }
