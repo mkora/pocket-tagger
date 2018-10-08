@@ -1,10 +1,20 @@
 ## Pocket Tagger
 
-#### Overview
+### Overview
 
 Adds tags to unread articles under your [Pocket](https://getpocket.com/) account
 
-#### Notes 
+### Before and After
+
+**Before running the pocket-tagger:**
+
+![Pocket articles list before](https://user-images.githubusercontent.com/31717889/33049137-a96ae7c0-ce2c-11e7-965c-011916547077.png)
+
+**And After:**
+
+![Pocket articles list after](https://user-images.githubusercontent.com/31717889/33049143-b025f564-ce2c-11e7-94d6-13847b064d83.png)
+
+### Notes 
 
 - Add a Pocket consumer key to a `config/*.json`
 
